@@ -1,6 +1,6 @@
 {
     "name": "ivanjennawedding",
-    "main": "index.js",
+    "main": "worker.js",
     "compatibility_date": "2022-07-12",
     "workers_dev": false,
     // "route": {
