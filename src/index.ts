@@ -4,11 +4,15 @@ export interface Env {
 	BinId: string
 }
 
+type Body = RSVP;
+
 interface IBin {
-	RSVP: Guest[];
+	record: {
+		RSVP: RSVP[];
+	};
 }
 
-interface Guest {
+interface RSVP {
 	name: string;
 	partner: string;
 	email: string;
@@ -18,35 +22,50 @@ interface Guest {
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
+		try {
+			const body: Body = await request.json();
 
-		const testData: Guest = {
-			name: "test person 1",
-			partner: "test person 2",
-			email: "test@gmail.com",
-			attending: true,
-			children: 0
-		};
+			const newRsvp: RSVP = {
+				...body
+			};
 
-		const BIN_ID = env.BinId;
-		const API_KEY = env.ApiKey;
-		const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+			const BIN_ID = env.BinId;
+			const API_KEY = env.ApiKey;
+			const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
-		const getBinRequest = await fetch(URL);
-		const bin = await getBinRequest.json() as IBin;
+			const getBinRequest = await fetch(URL, {
+				method: 'GET',
+				headers: {
+					'X-Access-Key': API_KEY
+				}
+			});
+			const bin = await getBinRequest.json() as IBin;
 
-		bin.RSVP.push(testData)
+			for (let i = 0; i < bin.record.RSVP.length; i++) {
+				const rsvp = bin.record.RSVP[i];
+				if (rsvp.name === newRsvp.name) {
+					return new Response(JSON.stringify({ message: 'Success' }), { status: 200 });
+				}
+			}
 
-		const updateRequest = await fetch(URL, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'appplication/json',
-				'X-Access-Key': API_KEY
-			},
-			body: JSON.stringify(bin)
-		});
+			bin.record.RSVP.push(newRsvp)
 
-		console.log(await updateRequest.json())
+			const updateRequest = await fetch(URL, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-Access-Key': API_KEY
+				},
+				body: JSON.stringify(bin.record)
+			});
 
-		return new Response("Finished");
+			const response = await updateRequest.json();
+		} catch (e) {
+			return new Response(JSON.stringify(e), {
+				"status": 500
+			});
+		}
+
+		return new Response(JSON.stringify({ message: 'Success' }), { status: 200 });
 	},
 } satisfies ExportedHandler<Env>;
