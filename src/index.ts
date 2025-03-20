@@ -50,7 +50,7 @@ export default {
 
 			bin.record.RSVP.push(newRsvp)
 
-			const updateRequest = await fetch(URL, {
+			await fetch(URL, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json',
@@ -59,13 +59,15 @@ export default {
 				body: JSON.stringify(bin.record)
 			});
 
-			const response = await updateRequest.json();
 		} catch (e) {
 			return new Response(JSON.stringify(e), {
 				"status": 500
 			});
 		}
 
-		return new Response(JSON.stringify({ message: 'Success' }), { status: 200 });
+		const response = new Response(JSON.stringify({ message: 'Success' }), { status: 200 });
+		response.headers.set('Access-Control-Allow-Origin', '*');
+
+		return response;
 	},
 } satisfies ExportedHandler<Env>;
