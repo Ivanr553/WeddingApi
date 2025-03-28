@@ -18,6 +18,7 @@ interface RSVP {
 	email: string;
 	attending: boolean;
 	children: number;
+	dietary: string;
 }
 
 const corsHeaders = {
